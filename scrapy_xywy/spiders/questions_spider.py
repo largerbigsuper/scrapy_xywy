@@ -4,6 +4,8 @@
 from string import Template
 
 import re
+
+import datetime
 import scrapy
 from bs4 import BeautifulSoup
 from scrapy.exceptions import IgnoreRequest
@@ -24,16 +26,22 @@ class QuestionSpider(scrapy.Spider):
 
     base_url = Template("http://club.xywy.com/keshi/$data/$page")
     def start_requests(self):
-        url = self.base_url.substitute({"data":"2017-03-21", "page":"1.html"})
-        url2 = self.base_url.substitute({"data":"2017-03-22", "page":"1.html"})
-        url3 = self.base_url.substitute({"data":"2017-03-20", "page":"1.html"})
-        request = scrapy.Request(url=url, callback=self.parse)
-        request2 = scrapy.Request(url=url2, callback=self.parse)
-        request3 = scrapy.Request(url=url3, callback=self.parse)
+        # url = self.base_url.substitute({"data":"2017-03-21", "page":"1.htm"})
+        # url2 = self.base_url.substitute({"data":"2017-03-22", "page":"1.htm"})
+        # url3 = self.base_url.substitute({"data":"2017-03-20", "page":"1.htm"})
+        # request = scrapy.Request(url=url, callback=self.parse)
+        # request2 = scrapy.Request(url=url2, callback=self.parse)
+        # request3 = scrapy.Request(url=url3, callback=self.parse)
 
-        yield request
-        yield request2
+        # yield request
+        # yield request2
         # yield request3
+        # 可以线上爬
+        for i in xrange(20):
+            date = datetime.date.today() - datetime.timedelta(days=i + 5)
+            data = date.strftime('%Y-%m-%d')
+            url = self.base_url.substitute({"data":data, "page":"1.html"})
+            yield scrapy.Request(url=url, callback=self.parse)
 
 
     def parse(self, response):
@@ -42,7 +50,7 @@ class QuestionSpider(scrapy.Spider):
         soup = BeautifulSoup(html, "lxml")
         # 判断是否有下一页
         nextpage = soup.find_all('a', text='[下一页]')
-        print  nextpage
+        # print  nextpage
         if nextpage:
             page = nextpage[0].get('href')
             data = response.url.split('/')[-2]
@@ -80,7 +88,8 @@ class QuestionSpider(scrapy.Spider):
         # 分类
         tab = soup.find('p', attrs={"class":"pt10 pb10 lh180 znblue normal-a"})
         if not tab:
-            yield scrapy.Request(url=response.url, callback=self.qusetion_parse)
+            return
+            # yield scrapy.Request(url=response.url, callback=self.qusetion_parse)
         category = tab.find_all('a')[2].string
         tag = tab.find_all('a')[3].string
         title = soup.find('p', attrs={"class":"fl dib fb"}).get('title')
@@ -94,14 +103,13 @@ class QuestionSpider(scrapy.Spider):
             description = desc_list[1]
         else:
             description = desc_list[0]
-        print description
+        # print description
 
         # answer = soup.find_all('div', attrs={"class":"pt15 f14 graydeep  pl20 pr20"})
         answer_div = response.xpath("//div[@class= 'pt15 f14 graydeep  pl20 pr20']")
         if not answer_div:
             return
-        print "---------------------------------"
-        print answer_div
+        # print answer_div
         text_list = answer_div[0].xpath('text()').extract()
         answer = ''
         for i in xrange(len(text_list)):
@@ -116,6 +124,7 @@ class QuestionSpider(scrapy.Spider):
         item['category'] = category
         item['source'] = source
 
+        print "-------又爬取一个------"
         yield item
 
 

@@ -137,7 +137,7 @@ Temporary Items
 .nfs*
 
 /questions.jl
-.idea/
-scrapy_xywy/.idea/
-scrapy_xywy/*.pyc
+.idea
+scrapy_xywy/.*pyc
+scrapy_xywy/scrapy_xywy/*.pyc
 scrapy_xywy/spiders/*.pyc
