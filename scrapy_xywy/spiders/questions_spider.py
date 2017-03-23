@@ -25,11 +25,16 @@ class QuestionSpider(scrapy.Spider):
     base_url = Template("http://club.xywy.com/keshi/$data/$page")
     def start_requests(self):
         url = self.base_url.substitute({"data":"2017-03-21", "page":"1.html"})
+        url2 = self.base_url.substitute({"data":"2017-03-22", "page":"1.html"})
+        url3 = self.base_url.substitute({"data":"2017-03-20", "page":"1.html"})
         request = scrapy.Request(url=url, callback=self.parse)
-        user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36"
-        request.headers.setdefault('User-Agent', user_agent)
-        yield request
-        print url
+        request2 = scrapy.Request(url=url2, callback=self.parse)
+        request3 = scrapy.Request(url=url3, callback=self.parse)
+
+        yield request2
+        # yield request2
+        # yield request3
+
 
     def parse(self, response):
         """处理问题列表"""
@@ -45,7 +50,7 @@ class QuestionSpider(scrapy.Spider):
             print "==============" + url + "================="
             yield scrapy.Request(url=url, callback=self.parse)
         else:
-            raise IgnoreRequest()
+            pass
         # 提前问题url
         divList = soup.find_all('div', attrs={"class":"club_dic"})
         for i in xrange(len(divList)):
@@ -64,8 +69,18 @@ class QuestionSpider(scrapy.Spider):
     def qusetion_parse(self, response):
         html = response.text
         soup = BeautifulSoup(html, 'lxml')
+        """
+        <p class="pt10 pb10 lh180 znblue normal-a">
+        <a href="http://club.xywy.com/" target="_blank">有问必答</a> &gt;
+        <a href="http://club.xywy.com/kswd_list.htm" target="_blank">全部问题</a> &gt;
+        <a href="http://club.xywy.com/big_287.htm" target="_blank">妇产科</a> &gt;
+        <a href="http://club.xywy.com/small_556.htm" target="_blank">月经不调</a> &gt;
+        月经推迟两个星期验尿没有怀孕请问什么原因	</p>
+        """
         # 分类
         tab = soup.find('p', attrs={"class":"pt10 pb10 lh180 znblue normal-a"})
+        if not tab:
+            return
         category = tab.find_all('a')[2].string
         tag = tab.find_all('a')[3].string
         title = soup.find('p', attrs={"class":"fl dib fb"}).get('title')
@@ -83,6 +98,10 @@ class QuestionSpider(scrapy.Spider):
 
         # answer = soup.find_all('div', attrs={"class":"pt15 f14 graydeep  pl20 pr20"})
         answer_div = response.xpath("//div[@class= 'pt15 f14 graydeep  pl20 pr20']")
+        if not answer_div:
+            return
+        print "---------------------------------"
+        print answer_div
         text_list = answer_div[0].xpath('text()').extract()
         answer = ''
         for i in xrange(len(text_list)):
@@ -110,7 +129,10 @@ class TestSpider(scrapy.Spider):
     start_urls = [
         # 'http://club.xywy.com/static/20140801/49588671.htm',
         # 'http://club.xywy.com/static/20170322/127617181.htm',
-        'http://club.xywy.com/static/20170323/127621121.htm'
+        # 'http://club.xywy.com/static/20170323/127621121.htm'
+        'http://club.xywy.com/static/20170321/127601416.htm',
+        'http://club.xywy.com/static/20170321/127601390.htm',
+        'http://club.xywy.com/static/20170321/127601391.htm',
     ]
 
     def parse(self, response):
@@ -126,6 +148,8 @@ class TestSpider(scrapy.Spider):
         """
         # 分类
         tab = soup.find('p', attrs={"class":"pt10 pb10 lh180 znblue normal-a"})
+        if not tab:
+            return
         category = tab.find_all('a')[2].string
         tag = tab.find_all('a')[3].string
         title = soup.find('p', attrs={"class":"fl dib fb"}).get('title')
@@ -143,6 +167,10 @@ class TestSpider(scrapy.Spider):
 
         # answer = soup.find_all('div', attrs={"class":"pt15 f14 graydeep  pl20 pr20"})
         answer_div = response.xpath("//div[@class= 'pt15 f14 graydeep  pl20 pr20']")
+        if not answer_div:
+            return
+        print "---------------------------------"
+        print answer_div
         text_list = answer_div[0].xpath('text()').extract()
         answer = ''
         for i in xrange(len(text_list)):

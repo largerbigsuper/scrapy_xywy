@@ -69,6 +69,15 @@ class RotateUserAgentMiddleware(UserAgentMiddleware):
         ua = random.choice(USER_AGENT_LIST)
         if ua:
             request.headers.setdefault('User-Agent', ua)
+        proxy = random.choice(PROXIES)
+        if proxy['user_pass'] is not None:
+            request.meta['proxy'] = "http://%s" % proxy['ip_port']
+            encoded_user_pass = base64.encodestring(proxy['user_pass'])
+            request.headers['Proxy-Authorization'] = 'Basic ' + encoded_user_pass
+            print "**************ProxyMiddleware have pass************" + proxy['ip_port']
+        else:
+            print "**************ProxyMiddleware no pass************" + proxy['ip_port']
+            request.meta['proxy'] = "http://%s" % proxy['ip_port']
 
 class ProxyMiddleware(object):
     def process_request(self, request, spider):
