@@ -31,8 +31,8 @@ class QuestionSpider(scrapy.Spider):
         request2 = scrapy.Request(url=url2, callback=self.parse)
         request3 = scrapy.Request(url=url3, callback=self.parse)
 
+        yield request
         yield request2
-        # yield request2
         # yield request3
 
 

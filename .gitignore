@@ -138,4 +138,6 @@ Temporary Items
 
 /questions.jl
 .idea/
-scrapy_xywy/*.pyc
+scrapy_xywy/.idea/
+/scrapy_xywy/*.pyc
+/scrapy_xywy/spiders/*.pyc
