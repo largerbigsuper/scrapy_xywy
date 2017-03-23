@@ -80,7 +80,7 @@ class QuestionSpider(scrapy.Spider):
         # 分类
         tab = soup.find('p', attrs={"class":"pt10 pb10 lh180 znblue normal-a"})
         if not tab:
-            return
+            yield scrapy.Request(url=response.url, callback=self.qusetion_parse)
         category = tab.find_all('a')[2].string
         tag = tab.find_all('a')[3].string
         title = soup.find('p', attrs={"class":"fl dib fb"}).get('title')
